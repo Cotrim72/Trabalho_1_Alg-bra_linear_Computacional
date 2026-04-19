@@ -75,8 +75,9 @@ class Matriz:
 n = 4
 B = np.random.rand(n, n).tolist()
 b = np.random.rand(n).tolist()
-A = Matriz(B)
+
 # Gauss sem biblioteca
+A = Matriz(B)
 inicio_gauss = time.time()
 print(A.eliminaçao_gaussiana(b))
 final_gauss = time.time()
@@ -84,6 +85,7 @@ print("Tempo gauss sem biblioteca:")
 print(final_gauss-inicio_gauss)
 
 # Lu sem biblioteca
+A = Matriz(B)
 inicio_lu = time.time()
 print(A.fatoraçao_lu(b))
 final_lu = time.time()
@@ -91,6 +93,7 @@ print("Tempo lu sem biblioteca:")
 print(final_lu-inicio_lu)
 
 # Gauss com bibioteca
+A = Matriz(B)
 inicio_gauss_bib = time.time()
 print(A.eliminaçao_gaussiana_numpy(b))
 final_gauss_bib = time.time()
@@ -98,6 +101,7 @@ print("Tempo gauss com biblioteca:")
 print(final_gauss_bib-inicio_gauss_bib)
 
 # Lu com biblioteca
+A = Matriz(B)
 inicio_lu_bib = time.time()
 print(A.fatoraçao_lu_scify(b))
 final_lu_bib = time.time()
