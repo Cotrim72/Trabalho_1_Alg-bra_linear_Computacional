@@ -1,13 +1,14 @@
-import time
 import numpy as np
 from scipy.linalg import lu_factor, lu_solve
 from scipy.sparse.linalg import gmres
+
+from utilidades import sub_vector, modulo_vector
 
 class Matriz:
     def __init__(self, A):
         self.A = A
 
-    def retro_substituiçao_para_atras(self, b):
+    def substituicao_para_tras(self, b):
         res = [0]*len(b)
         res[len(res)-1] = b[len(b)-1]/(self.A[len(self.A)-1][len(self.A[0])-1])
         i = len(b) - 2
@@ -19,7 +20,7 @@ class Matriz:
             i -= 1
         return res
 
-    def retro_substituiçao_para_frente(self, b):
+    def substituiçao_para_a_frente(self, b):
         res = [0]*len(b)
         res[0] = b[0]/(self.A[0][0])
         i = 1
@@ -40,7 +41,7 @@ class Matriz:
                 for k in range(i, n):
                     self.A[j][k] -= self.A[i][k]*multiplicador
                 b[j] -= multiplicador*b[i]
-        return self.retro_substituiçao_para_atras(b)
+        return self.substituicao_para_tras(b)
 
     def eliminaçao_gaussiana_numpy(self, b):
         A = np.array(self.A)
@@ -61,10 +62,10 @@ class Matriz:
                     U[j][k] -= multiplicador * U[i][k]
         fl = Matriz(L)
         fu = Matriz(U)
-        y = fl.retro_substituiçao_para_frente(b)
-        return fu.retro_substituiçao_para_atras(y)
+        y = fl.substituiçao_para_a_frente(b)
+        return fu.substituicao_para_tras(y)
 
-    def fatoraçao_lu_scify(self, b):
+    def fatoraçao_lu_scipy(self, b):
         A = np.array(self.A)
         B = np.array(b)
         lu, piv = lu_factor(A)
@@ -88,7 +89,7 @@ class Matriz:
         print(f"Iteração {n}: Erro = {R}, x = {x_novo}")
         return self.jacobi(b,t,o,x_novo,n)
     
-    def Gauss_Seidel(self,b,t,o,x,n=0):
+    def gauss_seidel(self,b,t,o,x,n=0):
         n += 1
         if n > o:
             return "Ultrapassou o número máximo de operações"
@@ -105,89 +106,10 @@ class Matriz:
         if R <= t:
             return (f"Iteração {n}: Erro = {R}, x = {x_novo}")
         print(f"Iteração {n}: Erro = {R}, x = {x_novo}")
-        return self.Gauss_Seidel(b,t,o,x_novo,n)
+        return self.gauss_seidel(b,t,o,x_novo,n)
     
-    def Gauss_Seidel_scipy(self,b,t,o,n=0):
+    def gauss_seidel_scipy(self,b,t,o,n=0):
         A = np.array(self.A, dtype=float)
         B = np.array(b, dtype=float)
         x, info = gmres(A, b=B, rtol = t, maxiter=o)
         print(f"Solução: {x}")
-    
-    
-def sub_vector(a,b):
-    res = [0]*len(a)
-    for i in range(len(a)):
-        res[i] = a[i] - b[i]
-    return res
-def modulo_vector(a):
-    # Foi utilizado norma euclidiana
-    soma = 0
-    for i in range(len(a)):
-        soma += (a[i])**(2)
-    mod = soma**(1/2)
-    return mod
-
-
-
-n = 10
-B = np.random.rand(n, n).tolist() #matriz aleatória gerada
-b = np.random.rand(n).tolist()
-x = [1]*len(b)
-t = 0.001
-o = 20
-
-# Gauss sem biblioteca
-A = Matriz(B)
-inicio_gauss = time.time()
-print(A.eliminaçao_gaussiana(b))
-final_gauss = time.time()
-print("Tempo gauss sem biblioteca:")
-print(final_gauss-inicio_gauss)
-
-# Lu sem biblioteca
-A = Matriz(B)
-inicio_lu = time.time()
-print(A.fatoraçao_lu(b))
-final_lu = time.time()
-print("Tempo lu sem biblioteca:")
-print(final_lu-inicio_lu)
-
-# Gauss com bibioteca
-A = Matriz(B)
-inicio_gauss_bib = time.time()
-print(A.eliminaçao_gaussiana_numpy(b))
-final_gauss_bib = time.time()
-print("Tempo gauss com biblioteca:")
-print(final_gauss_bib-inicio_gauss_bib)
-
-# Lu com biblioteca
-A = Matriz(B)
-inicio_lu_bib = time.time()
-print(A.fatoraçao_lu_scify(b))
-final_lu_bib = time.time()
-print("Tempo lu com biblioteca:")
-print(final_lu_bib-inicio_lu_bib)
-
-# Jacobi sem biblioteca
-A = Matriz(B)
-inicio_jacobi = time.time()
-print(A.jacobi(b,t,o,x))
-final_jacobi = time.time()
-print("Tempo jacobi sem biblioteca:")
-print(final_jacobi-inicio_jacobi)
-
-# Gauss_Seidel sem biblioteca
-A = Matriz(B)
-inicio_Gauss_Seidel = time.time()
-print(A.Gauss_Seidel(b,t,o,x))
-final_Gauss_Seidel = time.time()
-print("Tempo Gauss_seidel sem biblioteca:")
-print(final_Gauss_Seidel-inicio_Gauss_Seidel)
-
-# Gauss_Seidel com biblioteca
-inicio_Gauss_Seidel_bib = time.time()
-A = Matriz(B)
-print(A.Gauss_Seidel_scipy(b,t,o))
-final_Gauss_Seidel_bib = time.time()
-print("Tempo Gauss_seidel com biblioteca:")
-print(final_Gauss_Seidel_bib-inicio_Gauss_Seidel_bib)
