@@ -1,67 +1,96 @@
 import time
 import numpy as np
 
+from Dependencias.results import Results
 from matriz import Matriz
 
+def teste_metodo_direto(A: Matriz, b, metodo, caminho_saida):
+    r = Results()
+    inicio = time.time()
+    x = getattr(A, metodo)(b)
+    final = time.time()
+    r.write('Solução x:')
+    r.write(x)
+
+    r.skipline()
+    r.write(f'Erro da solução (|Ax - b|): {A.erro_solucao(x, b)}')
+    r.write(f'Tempo de execução: {final - inicio}')
+
+    r.generate_file(caminho_saida)
+
+def teste_metodo_iterativo(A: Matriz, b, t, o, x_inicial, metodo, caminho_saida):
+    r = Results()
+    inicio = time.time()
+    x, logs = getattr(A, metodo)(b, t, o, x_inicial)
+    final = time.time()
+
+    r.write('Logs intermediários:')
+    for l in logs: r.write(l)
+
+    r.skipline()
+    r.write('Solução x:')
+    r.write(x)
+
+    r.skipline()
+    r.write(f'Erro da solução (|Ax - b|): {A.erro_solucao(x, b)}')
+    r.write(f'Tempo de execução: {final - inicio}')
+
+    r.generate_file(caminho_saida)
+
+def teste_metodo_iterativo_biblioteca(A: Matriz, b, t, o, metodo, caminho_saida):
+    r = Results()
+    inicio = time.time()
+    x = getattr(A, metodo)(b, t, o)
+    final = time.time()
+
+    r.write('Solução x:')
+    r.write(x)
+
+    r.skipline()
+    r.write(f'Erro da solução (|Ax - b|): {A.erro_solucao(x, b)}')
+    r.write(f'Tempo de execução: {final - inicio}')
+
+    r.generate_file(caminho_saida)
+
+def testes_uma_matriz(n, t, o, x_inicial, caminho_saida):
+    'Gera uma matriz aleatória n x n, executa todos os métodos e escreve na pasta caminho_saida os resultados'
+    matriz = np.random.rand(n, n).tolist() #matriz aleatória gerada
+    A = Matriz(matriz)
+    b = np.random.rand(n).tolist()
+
+    # Configurações
+    r = Results()
+    r.write('Sistema A x = b')
+
+    r.skipline()
+    r.write(f'Matriz A ({n} x {n}:')
+    r.write(A)
+
+    r.skipline()
+    r.write('Vetor b:')
+    r.write(b)
+
+    r.skipline()
+    r.write('Configurações dos métodos iterativos:')
+    r.write(f'Tolerância t: {t}')
+    r.write(f'Número máximo de iterações o: {o}')
+
+    r.generate_file(f'{caminho_saida}/configuracoes.txt')
+
+    teste_metodo_direto(A, b, 'eliminacao_gaussiana', f'{caminho_saida}/Resultados/eliminacao_gaussiana.txt')
+    teste_metodo_direto(A, b, 'fatoracao_lu', f'{caminho_saida}/Resultados/fatoracao_lu.txt')
+
+    teste_metodo_iterativo(A, b, t, o, x_inicial, 'jacobi', f'{caminho_saida}/Resultados/jacobi.txt')
+    teste_metodo_iterativo(A, b, t, o, x_inicial, 'gauss_seidel', f'{caminho_saida}/Resultados/gauss_seidel.txt')
+
+    # Métodos implementados por bibliotecas, para comparação
+    teste_metodo_direto(A, b, 'eliminacao_gaussiana_numpy', f'{caminho_saida}/Bibliotecas/eliminacao_gaussiana.txt')
+    teste_metodo_direto(A, b, 'fatoracao_lu_scipy', f'{caminho_saida}/Bibliotecas/fatoracao_lu.txt')
+    teste_metodo_iterativo_biblioteca(A, b, t, o, 'gauss_seidel_scipy', f'{caminho_saida}/Bibliotecas/gauss_seidel.txt')
+
 n = 10
-B = np.random.rand(n, n).tolist() #matriz aleatória gerada
-b = np.random.rand(n).tolist()
-x = [1]*len(b)
+x_inicial = [1]*n
 t = 0.001
 o = 20
 
-# Gauss sem biblioteca
-A = Matriz(B)
-inicio_gauss = time.time()
-print(A.eliminaçao_gaussiana(b))
-final_gauss = time.time()
-print("Tempo gauss sem biblioteca:")
-print(final_gauss-inicio_gauss)
-
-# Lu sem biblioteca
-A = Matriz(B)
-inicio_lu = time.time()
-print(A.fatoraçao_lu(b))
-final_lu = time.time()
-print("Tempo lu sem biblioteca:")
-print(final_lu-inicio_lu)
-
-# Gauss com bibioteca
-A = Matriz(B)
-inicio_gauss_bib = time.time()
-print(A.eliminaçao_gaussiana_numpy(b))
-final_gauss_bib = time.time()
-print("Tempo gauss com biblioteca:")
-print(final_gauss_bib-inicio_gauss_bib)
-
-# Lu com biblioteca
-A = Matriz(B)
-inicio_lu_bib = time.time()
-print(A.fatoraçao_lu_scipy(b))
-final_lu_bib = time.time()
-print("Tempo lu com biblioteca:")
-print(final_lu_bib-inicio_lu_bib)
-
-# Jacobi sem biblioteca
-A = Matriz(B)
-inicio_jacobi = time.time()
-print(A.jacobi(b,t,o,x))
-final_jacobi = time.time()
-print("Tempo jacobi sem biblioteca:")
-print(final_jacobi-inicio_jacobi)
-
-# Gauss_Seidel sem biblioteca
-A = Matriz(B)
-inicio_Gauss_Seidel = time.time()
-print(A.gauss_seidel(b,t,o,x))
-final_Gauss_Seidel = time.time()
-print("Tempo Gauss_seidel sem biblioteca:")
-print(final_Gauss_Seidel-inicio_Gauss_Seidel)
-
-# Gauss_Seidel com biblioteca
-inicio_Gauss_Seidel_bib = time.time()
-A = Matriz(B)
-print(A.gauss_seidel_scipy(b,t,o))
-final_Gauss_Seidel_bib = time.time()
-print("Tempo Gauss_seidel com biblioteca:")
-print(final_Gauss_Seidel_bib-inicio_Gauss_Seidel_bib)
+testes_uma_matriz(n, t, o, x_inicial, 'Resultados10x10')

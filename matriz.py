@@ -2,11 +2,45 @@ import numpy as np
 from scipy.linalg import lu_factor, lu_solve
 from scipy.sparse.linalg import gmres
 
-from utilidades import sub_vector, modulo_vector
+from utilidades import sub_vetor, modulo_vetor, soma_vetor, prod_vetor_escalar
 
 class Matriz:
     def __init__(self, A):
         self.A = A
+
+    def __repr__(self):
+        s = ''
+        s += '['
+        for i in range(len(self.A)):
+            s += f'{self.A[i]}'
+            if i <= len(self.A) - 1:
+                s += '\n'
+
+        s += ']'
+        return s
+                        
+    def coluna(self, j):
+        'Retorna a j-ésima coluna de A'
+        res = []
+        for i in range(len(self.A)):
+            res.append(self.A[i][j])
+
+        return res
+
+    def prod_vetor(self, x):
+        'Retorna o produto entre A e o vetor x'
+        res = [0]*len(self.A)
+        for i in range(len(x)):
+            prod = prod_vetor_escalar(self.coluna(i), x[i])
+            res = soma_vetor(res, prod)
+
+        return res
+
+    def erro_solucao(self, x, b):
+        'Retorna uma métrica para o erro de x enquanto solução do sistema A x = b. Exatamente, retorna o módulo de b - A x; quanto mais próximo de 0, melhor.'
+        Ax = self.prod_vetor(x)
+        erro = sub_vetor(b, Ax)
+        return modulo_vetor(erro)
 
     def substituicao_para_tras(self, b):
         res = [0]*len(b)
@@ -20,7 +54,7 @@ class Matriz:
             i -= 1
         return res
 
-    def substituiçao_para_a_frente(self, b):
+    def substituiçao_para_frente(self, b):
         res = [0]*len(b)
         res[0] = b[0]/(self.A[0][0])
         i = 1
@@ -32,7 +66,7 @@ class Matriz:
             i += 1
         return res
 
-    def eliminaçao_gaussiana(self, b):
+    def eliminacao_gaussiana(self, b):
         n = len(b)
         for i in range(n):
             pivo = self.A[i][i]
@@ -43,13 +77,13 @@ class Matriz:
                 b[j] -= multiplicador*b[i]
         return self.substituicao_para_tras(b)
 
-    def eliminaçao_gaussiana_numpy(self, b):
+    def eliminacao_gaussiana_numpy(self, b):
         A = np.array(self.A)
         B = np.array(b)
         x = np.linalg.solve(A, B)
         return x
 
-    def fatoraçao_lu(self, b):
+    def fatoracao_lu(self, b):
         n = len(self.A)
         L = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
         U = [line[:] for line in self.A]
@@ -62,17 +96,17 @@ class Matriz:
                     U[j][k] -= multiplicador * U[i][k]
         fl = Matriz(L)
         fu = Matriz(U)
-        y = fl.substituiçao_para_a_frente(b)
+        y = fl.substituiçao_para_frente(b)
         return fu.substituicao_para_tras(y)
 
-    def fatoraçao_lu_scipy(self, b):
+    def fatoracao_lu_scipy(self, b):
         A = np.array(self.A)
         B = np.array(b)
         lu, piv = lu_factor(A)
         x = lu_solve((lu, piv), b)
         return x
     
-    def jacobi(self,b,t,o,x,n=0):
+    def jacobi(self,b,t,o,x,n=0,logs=None):
         n += 1
         if n > o:
             return "Ultrapassou o número máximo de operações"
@@ -83,13 +117,17 @@ class Matriz:
                 if i != j:
                     soma += self.A[i][j]*x[j]
             x_novo[i] = (b[i] - soma)/self.A[i][i]
-        R = modulo_vector(sub_vector(x_novo,x))/modulo_vector(x_novo)
+        R = modulo_vetor(sub_vetor(x_novo,x))/modulo_vetor(x_novo)
+
+        if logs == None: logs = []
+        logs.append(f'Iteração {n}: Erro = {R}, x = {x_novo}')
+
         if R <= t:
-            return (f"Iteração {n}: Erro = {R}, x = {x_novo}")
-        print(f"Iteração {n}: Erro = {R}, x = {x_novo}")
-        return self.jacobi(b,t,o,x_novo,n)
+            return x_novo, logs
     
-    def gauss_seidel(self,b,t,o,x,n=0):
+        return self.jacobi(b,t,o,x_novo,n,logs)
+    
+    def gauss_seidel(self,b,t,o,x,n=0,logs=None):
         n += 1
         if n > o:
             return "Ultrapassou o número máximo de operações"
@@ -102,14 +140,18 @@ class Matriz:
             for j in range(i+1,len(x)):
                 soma_old += self.A[i][j]*x[j]
             x_novo[i] = (b[i] - soma_new - soma_old)/self.A[i][i]
-        R = modulo_vector(sub_vector(x_novo,x))/modulo_vector(x_novo)
+        R = modulo_vetor(sub_vetor(x_novo,x))/modulo_vetor(x_novo)
+
+        if logs == None: logs = []
+        logs.append(f'Iteração {n}: Erro = {R}, x = {x_novo}')
+
         if R <= t:
-            return (f"Iteração {n}: Erro = {R}, x = {x_novo}")
-        print(f"Iteração {n}: Erro = {R}, x = {x_novo}")
-        return self.gauss_seidel(b,t,o,x_novo,n)
+            return x_novo, logs
+        
+        return self.gauss_seidel(b,t,o,x_novo,n,logs)
     
     def gauss_seidel_scipy(self,b,t,o,n=0):
         A = np.array(self.A, dtype=float)
         B = np.array(b, dtype=float)
         x, info = gmres(A, b=B, rtol = t, maxiter=o)
-        print(f"Solução: {x}")
+        return x
