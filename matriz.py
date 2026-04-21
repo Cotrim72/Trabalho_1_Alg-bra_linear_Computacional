@@ -2,7 +2,8 @@ import numpy as np
 from scipy.linalg import lu_factor, lu_solve
 from scipy.sparse.linalg import gmres
 
-from utilidades import sub_vetor, modulo_vetor, soma_vetor, prod_vetor_escalar
+from Dependencias.utilidades import sub_vetor, modulo_vetor, soma_vetor, prod_vetor_escalar
+from Dependencias.log import Log
 
 class Matriz:
     def __init__(self, A):
@@ -124,7 +125,7 @@ class Matriz:
         R = modulo_vetor(sub_vetor(x_novo,x))/modulo_vetor(x_novo)
 
         if logs == None: logs = []
-        logs.append(f'Iteração {n}: Erro = {R}, x = {x_novo}')
+        logs.append(Log(n, R, x_novo))
 
         if R <= t:
             return x_novo, logs
@@ -147,7 +148,7 @@ class Matriz:
         R = modulo_vetor(sub_vetor(x_novo,x))/modulo_vetor(x_novo)
 
         if logs == None: logs = []
-        logs.append(f'Iteração {n}: Erro = {R}, x = {x_novo}')
+        logs.append(Log(n, R, x_novo))
 
         if R <= t:
             return x_novo, logs
