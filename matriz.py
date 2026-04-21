@@ -13,12 +13,16 @@ class Matriz:
         s += '['
         for i in range(len(self.A)):
             s += f'{self.A[i]}'
-            if i <= len(self.A) - 1:
+            if i < len(self.A) - 1:
                 s += '\n'
 
         s += ']'
         return s
-                        
+
+    def tamanho(self):
+        'Retorna a quantidade de linhas de A'
+        return len(self.A)
+
     def coluna(self, j):
         'Retorna a j-ésima coluna de A'
         res = []
