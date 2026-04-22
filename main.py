@@ -1,12 +1,11 @@
 import numpy as np
 
 from testes import TestesUmaMatriz
-from matriz import SistemaLinear
 
 n = 3
 x_inicial = [1]*n
 t = 0.001
-o = 100
+o = 50
 
 t = TestesUmaMatriz(
     np.random.rand(n, n).tolist(),

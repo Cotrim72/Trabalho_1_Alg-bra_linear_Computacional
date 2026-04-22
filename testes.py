@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from Dependencias.results import Results
 from Dependencias.utilidades import erro_solucao
-from matriz import SistemaLinear
+from sistema_linear import SistemaLinear
 
 class TestesUmaMatriz:
     'Objetivo: executar todos os métodos em uma única matriz A e um único vetor B, e escrever os resultados em arquivos'
@@ -69,9 +69,13 @@ class TestesUmaMatriz:
         s = self.sistema()
 
         inicio = time.time()
-        getattr(s, metodo)(self.t, self.o) # Chamando o método
+        res = getattr(s, metodo)(self.t, self.o) # Chamando o método
         final = time.time()
 
+        if res != None:
+            r.write(res)
+            r.skipline()
+            
         x = s.x
         logs = s.logs
 
