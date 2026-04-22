@@ -4,14 +4,14 @@ from math import log10
 import matplotlib.pyplot as plt
 
 from Dependencias.results import Results
-from matriz import Matriz
+from Dependencias.utilidades import erro_solucao
+from matriz import SistemaLinear
 
 class TestesUmaMatriz:
     'Objetivo: executar todos os métodos em uma única matriz A e um único vetor B, e escrever os resultados em arquivos'
 
-    def __init__(self, A: Matriz, b, t, o, x_inicial, caminho_saida):
+    def __init__(self, A: list[list[float]], b: float, t: float, o: float, x_inicial: list[float], caminho_saida: str):
         self.A = A
-        self.n = A.tamanho()
         self.b = b
 
         self.t = t
@@ -20,14 +20,19 @@ class TestesUmaMatriz:
 
         self.caminho_saida = caminho_saida
 
+    def sistema(self):
+        'Retorna o sistema linear que vamos resolver.'
+        return SistemaLinear(self.A, self.b, self.x_inicial)
+
     def escrever_configuracoes(self):
         # Configurações
         r = Results()
         r.write('Sistema A x = b')
 
         r.skipline()
-        r.write(f'Matriz A ({self.n} x {self.n}):')
-        r.write(self.A)
+        s = self.sistema()
+        r.write(f'Matriz A ({s.tamanho()} x {s.tamanho()}):')
+        r.write(self.sistema())
 
         r.skipline()
         r.write('Vetor b:')
@@ -40,25 +45,35 @@ class TestesUmaMatriz:
 
         r.generate_file(f'{self.caminho_saida}/configuracoes.txt')
 
-    def teste_metodo_direto(self, metodo, caminho_saida):
+    def teste_metodo_direto(self, metodo: str, caminho_saida: str):
         r = Results()
+        s = self.sistema()
+
         inicio = time.time()
-        x = getattr(self.A, metodo)(self.b)
+        getattr(s, metodo)() # Chamando o método
         final = time.time()
+
+        x = s.x
         r.write('Solução x:')
         r.write(x)
 
         r.skipline()
-        r.write(f'Erro da solução (|Ax - b|): {self.A.erro_solucao(x, self.b)}')
+        r.write(f'Erro da solução (|Ax - b|): {erro_solucao(self.A, x, self.b)}')
+
         r.write(f'Tempo de execução: {final - inicio}')
 
         r.generate_file(caminho_saida)
 
-    def teste_metodo_iterativo(self, metodo, caminho_saida):
+    def teste_metodo_iterativo(self, metodo: str, caminho_saida: str):
         r = Results()
+        s = self.sistema()
+
         inicio = time.time()
-        x, logs = getattr(self.A, metodo)(self.b, self.t, self.o, self.x_inicial)
+        getattr(s, metodo)(self.t, self.o) # Chamando o método
         final = time.time()
+
+        x = s.x
+        logs = s.logs
 
         r.write('Logs intermediários:')
         for l in logs: r.write(l)
@@ -68,7 +83,7 @@ class TestesUmaMatriz:
         r.write(x)
 
         r.skipline()
-        r.write(f'Erro da solução (|Ax - b|): {self.A.erro_solucao(x, self.b)}')
+        r.write(f'Erro da solução (|Ax - b|): {erro_solucao(self.A, x, self.b)}')
         r.write(f'Tempo de execução: {final - inicio}')
 
         r.generate_file(caminho_saida)
@@ -87,17 +102,20 @@ class TestesUmaMatriz:
         plt.savefig(nome_grafico)
         plt.close()
 
-    def teste_metodo_iterativo_biblioteca(self, metodo, caminho_saida):
+    def teste_metodo_iterativo_biblioteca(self, metodo: str, caminho_saida: str):
         r = Results()
+        s = self.sistema()
+
         inicio = time.time()
-        x = getattr(self.A, metodo)(self.b, self.t, self.o)
+        getattr(s, metodo)(self.t, self.o)
         final = time.time()
 
+        x = s.x
         r.write('Solução x:')
         r.write(x)
 
         r.skipline()
-        r.write(f'Erro da solução (|Ax - b|): {self.A.erro_solucao(x, self.b)}')
+        r.write(f'Erro da solução (|Ax - b|): {erro_solucao(self.A, x, self.b)}')
         r.write(f'Tempo de execução: {final - inicio}')
 
         r.generate_file(caminho_saida)

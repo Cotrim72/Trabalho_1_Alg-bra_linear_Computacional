@@ -5,11 +5,30 @@ from scipy.sparse.linalg import gmres
 from Dependencias.utilidades import sub_vetor, modulo_vetor, soma_vetor, prod_vetor_escalar
 from Dependencias.log import Log
 
-class Matriz:
-    def __init__(self, A):
-        self.A = A
+class SistemaLinear:
+    'Objeto mutável representando um sistema linear A x = b, em que A é uma matriz quadrada.'
+
+    def __init__(self, A: list[list], b: list, x_inicial: list = None):
+        'x_inicial é o ponto de partida para os métodos iterativos.'
+        self.A = [linha[:] for linha in A]
+        self.b = b[:]
+
+        if x_inicial == None:
+            self.x = [1]*self.tamanho()
+        else:
+            self.x = x_inicial[:]
+
+        self.logs: list[Log] = [] # Registros para os métodos iterativos
+
+        # Garantir que a matriz é quadrada e que, em geral, as dimensões são compatíveis
+        n = len(self.A)
+        assert n >= 1
+        for l in self.A: assert len(l) == n
+        assert len(self.b) == n
+        assert len(self.x) == n
 
     def __repr__(self):
+        'Retorna uma string representando A.'
         s = ''
         s += '['
         for i in range(len(self.A)):
@@ -21,33 +40,13 @@ class Matriz:
         return s
 
     def tamanho(self):
-        'Retorna a quantidade de linhas de A'
+        'Retorna a quantidade de linhas de A.'
         return len(self.A)
 
-    def coluna(self, j):
-        'Retorna a j-ésima coluna de A'
-        res = []
-        for i in range(len(self.A)):
-            res.append(self.A[i][j])
+    def substituicao_para_tras(self):
+        'Altera x, realizando a substituição para trás.'
+        b = self.b
 
-        return res
-
-    def prod_vetor(self, x):
-        'Retorna o produto entre A e o vetor x'
-        res = [0]*len(self.A)
-        for i in range(len(x)):
-            prod = prod_vetor_escalar(self.coluna(i), x[i])
-            res = soma_vetor(res, prod)
-
-        return res
-
-    def erro_solucao(self, x, b):
-        'Retorna uma métrica para o erro de x enquanto solução do sistema A x = b. Exatamente, retorna o módulo de b - A x; quanto mais próximo de 0, melhor.'
-        Ax = self.prod_vetor(x)
-        erro = sub_vetor(b, Ax)
-        return modulo_vetor(erro)
-
-    def substituicao_para_tras(self, b):
         res = [0]*len(b)
         res[len(res)-1] = b[len(b)-1]/(self.A[len(self.A)-1][len(self.A[0])-1])
         i = len(b) - 2
@@ -57,9 +56,13 @@ class Matriz:
                 soma += (self.A[i][j]*res[j])
             res[i] = (b[i] - soma)/self.A[i][i]
             i -= 1
-        return res
+        
+        self.x = res
 
-    def substituiçao_para_frente(self, b):
+    def substituiçao_para_frente(self):
+        'Altera x, realizando a substituição para frente.'
+        b = self.b
+
         res = [0]*len(b)
         res[0] = b[0]/(self.A[0][0])
         i = 1
@@ -69,9 +72,13 @@ class Matriz:
                 soma += (self.A[i][j]*res[j])
             res[i] = (b[i] - soma)/self.A[i][i]
             i += 1
-        return res
+        
+        self.x = res
 
-    def eliminacao_gaussiana(self, b):
+    def eliminacao_gaussiana(self):
+        'Altera A e x, resolvendo o sistema por eliminação gaussiana.'
+        b = self.b
+
         n = len(b)
         for i in range(n):
             pivo = self.A[i][i]
@@ -80,16 +87,24 @@ class Matriz:
                 for k in range(i, n):
                     self.A[j][k] -= self.A[i][k]*multiplicador
                 b[j] -= multiplicador*b[i]
-        return self.substituicao_para_tras(b)
 
-    def eliminacao_gaussiana_numpy(self, b):
+        self.substituicao_para_tras()
+
+    def eliminacao_gaussiana_numpy(self):
+        'Altera x, realizando a eliminação gaussiana com a biblioteca numpy.'
+        b = self.b
+
         A = np.array(self.A)
         B = np.array(b)
         x = np.linalg.solve(A, B)
-        return x
+        
+        self.x = x
 
-    def fatoracao_lu(self, b):
+    def fatoracao_lu(self):
+        'Altera x, resolvendo o sistema com a fatoração LU.'
+        b = self.b
         n = len(self.A)
+
         L = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
         U = [line[:] for line in self.A]
 
@@ -99,22 +114,33 @@ class Matriz:
                 L[j][i] = multiplicador
                 for k in range(i, n):
                     U[j][k] -= multiplicador * U[i][k]
-        fl = Matriz(L)
-        fu = Matriz(U)
-        y = fl.substituiçao_para_frente(b)
-        return fu.substituicao_para_tras(y)
+        
+        fl = SistemaLinear(L, b)
+        fl.substituiçao_para_frente()
+        y = fl.x
 
-    def fatoracao_lu_scipy(self, b):
+        fu = SistemaLinear(U, y)
+        fu.substituicao_para_tras()
+        self.x = fu.x
+
+    def fatoracao_lu_scipy(self):
+        b = self.b
+
         A = np.array(self.A)
         B = np.array(b)
         lu, piv = lu_factor(A)
         x = lu_solve((lu, piv), b)
-        return x
+
+        self.x = x
     
-    def jacobi(self,b,t,o,x,n=0,logs=None):
+    def jacobi(self, t: float, o: float, n: int = 0):
+        'Altera x, resolvendo o sistema pelo método de Jacobi.'
         n += 1
         if n > o:
             return "Ultrapassou o número máximo de operações"
+        
+        b = self.b
+        x = self.x
         x_novo = [0]*len(x)
         for i in range(len(x)):
             soma = 0
@@ -124,18 +150,22 @@ class Matriz:
             x_novo[i] = (b[i] - soma)/self.A[i][i]
         R = modulo_vetor(sub_vetor(x_novo,x))/modulo_vetor(x_novo)
 
-        if logs == None: logs = []
-        logs.append(Log(n, R, x_novo))
+        self.logs.append(Log(n, R, x_novo))
+        self.x = x_novo
 
         if R <= t:
-            return x_novo, logs
+            return
     
-        return self.jacobi(b,t,o,x_novo,n,logs)
+        self.jacobi(t, o, n)
     
-    def gauss_seidel(self,b,t,o,x,n=0,logs=None):
+    def gauss_seidel(self, t: float, o: float, n: int = 0):
+        'Altera x, resolvendo o sistema pelo método de Gauss-Seidel.'
         n += 1
         if n > o:
             return "Ultrapassou o número máximo de operações"
+        
+        b = self.b
+        x = self.x
         x_novo = [0]*len(x)
         for i in range(len(x)):
             soma_new = 0
@@ -147,16 +177,20 @@ class Matriz:
             x_novo[i] = (b[i] - soma_new - soma_old)/self.A[i][i]
         R = modulo_vetor(sub_vetor(x_novo,x))/modulo_vetor(x_novo)
 
-        if logs == None: logs = []
-        logs.append(Log(n, R, x_novo))
+        self.logs.append(Log(n, R, x_novo))
+        self.x = x_novo
 
         if R <= t:
-            return x_novo, logs
+            return
         
-        return self.gauss_seidel(b,t,o,x_novo,n,logs)
+        self.gauss_seidel(t, o, n)
     
-    def gauss_seidel_scipy(self,b,t,o,n=0):
+    def gauss_seidel_scipy(self, t, o, n: int = 0):
+        'Altera x, resolvendo o sistema pelo método de Gauss-Seidel usando a biblioteca scipy.'
+        b = self.b
+
         A = np.array(self.A, dtype=float)
         B = np.array(b, dtype=float)
         x, info = gmres(A, b=B, rtol = t, maxiter=o)
-        return x
+        self.x = x
+        return
