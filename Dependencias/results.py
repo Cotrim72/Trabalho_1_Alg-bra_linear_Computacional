@@ -8,7 +8,7 @@ class Results:
 
     def skipline(self): self.string += '\n'
 
-    def generate_file(self, file_name):
+    def generate_file(self, file_name: str):
         # Se o path não existe, cria as pastas correspondentes
         os.makedirs(os.path.dirname(file_name), exist_ok=True)
 

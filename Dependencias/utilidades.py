@@ -1,16 +1,16 @@
-def soma_vetor(a,b):
+def soma_vetor(a: list, b: list):
     res = [0]*len(a)
     for i in range(len(a)):
         res[i] = a[i] + b[i]
     return res
 
-def sub_vetor(a,b):
+def sub_vetor(a: list, b: list):
     res = [0]*len(a)
     for i in range(len(a)):
         res[i] = a[i] - b[i]
     return res
 
-def modulo_vetor(a):
+def modulo_vetor(a: list):
     # Foi utilizado norma euclidiana
     soma = 0
     for i in range(len(a)):
@@ -18,7 +18,7 @@ def modulo_vetor(a):
     mod = soma**(1/2)
     return mod
 
-def prod_vetor_escalar(a, k):
+def prod_vetor_escalar(a: list, k):
     'Retorna o produto entre o vetor a e o escalar k'
     res = [0]*len(a)
     for i in range(len(a)):
@@ -26,11 +26,11 @@ def prod_vetor_escalar(a, k):
 
     return res
 
-def coluna(A: list[list[float]], j: int):
+def coluna(A: list[list], j: int):
     'Retorna uma cópia da j-ésima coluna de A.'
     return [A[i][j] for i in range(len(A))]
 
-def prod_matriz_vetor(A: list[list[float]], y: list[float]):
+def prod_matriz_vetor(A: list[list], y: list):
     'Retorna o produto entre A e o vetor y'
     res = [0]*len(A)
     for i in range(len(y)):
@@ -39,7 +39,7 @@ def prod_matriz_vetor(A: list[list[float]], y: list[float]):
 
     return res
 
-def erro_solucao(A: list[list[float]], x: list[float], b: list[float]):
+def erro_solucao(A: list[list], x: list, b: list):
     'Retorna uma métrica para o erro de x enquanto solução do sistema A x = b. Exatamente, retorna o módulo de b - A x; quanto mais próximo de 0, melhor.'
     Ax = prod_matriz_vetor(A, x)
     erro = sub_vetor(b, Ax)

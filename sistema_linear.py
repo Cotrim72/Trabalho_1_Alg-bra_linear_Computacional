@@ -133,7 +133,7 @@ class SistemaLinear:
 
         self.x = x
     
-    def jacobi(self, t: float, o: float, n: int = 0):
+    def jacobi(self, t: float, o: int, n: int = 0):
         'Altera x, resolvendo o sistema pelo método de Jacobi.'
         n += 1
         if n > o:
@@ -158,7 +158,7 @@ class SistemaLinear:
     
         return self.jacobi(t, o, n) # Vai retornar None ou a mensagem de erro
     
-    def gauss_seidel(self, t: float, o: float, n: int = 0):
+    def gauss_seidel(self, t: float, o: int, n: int = 0):
         'Altera x, resolvendo o sistema pelo método de Gauss-Seidel.'
         n += 1
         if n > o:
@@ -185,7 +185,7 @@ class SistemaLinear:
         
         return self.gauss_seidel(t, o, n) # Vai retornar None ou a mensagem de erro
     
-    def gauss_seidel_scipy(self, t, o, n: int = 0):
+    def gauss_seidel_scipy(self, t: float, o: int, n: int = 0):
         'Altera x, resolvendo o sistema pelo método de Gauss-Seidel usando a biblioteca scipy.'
         b = self.b
 

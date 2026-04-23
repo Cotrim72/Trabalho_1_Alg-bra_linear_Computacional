@@ -1,5 +1,5 @@
 class Log:
-    def __init__(self, iteracao, erro, x):
+    def __init__(self, iteracao: int, erro: float, x: list):
         self.iteracao = iteracao
         self.erro = erro
         self.x = x

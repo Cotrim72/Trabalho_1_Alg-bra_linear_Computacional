@@ -10,7 +10,7 @@ from sistema_linear import SistemaLinear
 class TestesUmaMatriz:
     'Objetivo: executar todos os métodos em uma única matriz A e um único vetor B, e escrever os resultados em arquivos'
 
-    def __init__(self, A: list[list[float]], b: float, t: float, o: float, x_inicial: list[float], caminho_saida: str):
+    def __init__(self, A: list[list], b: list, t: float, o: int, x_inicial: list, caminho_saida: str):
         self.A = A
         self.b = b
 
