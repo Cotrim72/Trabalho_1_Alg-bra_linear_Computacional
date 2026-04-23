@@ -184,13 +184,3 @@ class SistemaLinear:
             return
         
         return self.gauss_seidel(t, o, n) # Vai retornar None ou a mensagem de erro
-    
-    def gauss_seidel_scipy(self, t: float, o: int, n: int = 0):
-        'Altera x, resolvendo o sistema pelo método de Gauss-Seidel usando a biblioteca scipy.'
-        b = self.b
-
-        A = np.array(self.A, dtype=float)
-        B = np.array(b, dtype=float)
-        x, info = gmres(A, b=B, rtol = t, maxiter=o)
-        self.x = x
-        return

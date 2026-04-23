@@ -45,3 +45,22 @@ def erro_solucao(A: list[list], x: list, b: list):
     erro = sub_vetor(b, Ax)
     
     return modulo_vetor(erro)
+
+def gera_matriz_diagonal_dominante(A:list[list]):
+    for i in range(len(A)):
+        soma = 0
+        for j in range(len(A[0])):
+            if i != j:
+                soma += abs(A[i][j])
+        A[i][i] = abs(A[i][i]) + soma
+    return A
+
+def check_matriz_diagonal_dominante(A:list[list]):
+    for i in range(len(A)):
+        soma = 0
+        for j in range(len(A[0])):
+            if i != j:
+                soma += abs(A[i][j])
+        if abs(A[i][i]) < soma:
+            return "Não é uma matriz diagonal dominante"
+    return "A matriz é diagonal dominante"

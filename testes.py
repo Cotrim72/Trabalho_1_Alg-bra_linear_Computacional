@@ -4,7 +4,7 @@ from math import log10
 import matplotlib.pyplot as plt
 
 from Dependencias.results import Results
-from Dependencias.utilidades import erro_solucao
+from Dependencias.utilidades import erro_solucao, check_matriz_diagonal_dominante
 from sistema_linear import SistemaLinear
 
 class TestesUmaMatriz:
@@ -68,6 +68,9 @@ class TestesUmaMatriz:
         r = Results()
         s = self.sistema()
 
+        r.write(f'{check_matriz_diagonal_dominante(self.A)}')
+        r.skipline()
+        
         inicio = time.time()
         res = getattr(s, metodo)(self.t, self.o) # Chamando o método
         final = time.time()
@@ -106,24 +109,6 @@ class TestesUmaMatriz:
         plt.savefig(nome_grafico)
         plt.close()
 
-    def teste_metodo_iterativo_biblioteca(self, metodo: str, caminho_saida: str):
-        r = Results()
-        s = self.sistema()
-
-        inicio = time.time()
-        getattr(s, metodo)(self.t, self.o)
-        final = time.time()
-
-        x = s.x
-        r.write('Solução x:')
-        r.write(x)
-
-        r.skipline()
-        r.write(f'Erro da solução (|Ax - b|): {erro_solucao(self.A, x, self.b)}')
-        r.write(f'Tempo de execução: {final - inicio}')
-
-        r.generate_file(caminho_saida)
-
     def executar(self):
         pasta = self.caminho_saida
 
@@ -137,5 +122,3 @@ class TestesUmaMatriz:
 
         self.teste_metodo_direto('eliminacao_gaussiana_numpy', f'{pasta}/Bibliotecas/eliminacao_gaussiana.txt')
         self.teste_metodo_direto('fatoracao_lu_scipy', f'{pasta}/Bibliotecas/fatoracao_lu.txt')
-
-        self.teste_metodo_iterativo_biblioteca('gauss_seidel_scipy', f'{pasta}/Bibliotecas/gauss_seidel.txt')
