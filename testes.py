@@ -1,5 +1,4 @@
 import time
-import numpy as np
 from math import log10
 import matplotlib.pyplot as plt
 

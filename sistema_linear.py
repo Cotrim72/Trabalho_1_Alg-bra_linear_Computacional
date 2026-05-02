@@ -9,7 +9,9 @@ class SistemaLinear:
     'Objeto mutável representando um sistema linear A x = b, em que A é uma matriz quadrada.'
 
     def __init__(self, A: list[list], b: list, x_inicial: list = None):
-        'x_inicial é o ponto de partida para os métodos iterativos.'
+        '''
+        x_inicial é o ponto de partida para os métodos iterativos. Os atributos não devem ser alterados de fora da classe após a instanciação.
+        '''
         self.A = [linha[:] for linha in A]
         self.b = b[:]
 

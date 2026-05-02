@@ -1,16 +1,19 @@
 def soma_vetor(a: list, b: list):
+    'Retorna a + b. Ambos devem ter o mesmo tamanho.'
     res = [0]*len(a)
     for i in range(len(a)):
         res[i] = a[i] + b[i]
     return res
 
 def sub_vetor(a: list, b: list):
+    'Retorna a - b. Ambos devem ter o mesmo tamanho.'
     res = [0]*len(a)
     for i in range(len(a)):
         res[i] = a[i] - b[i]
     return res
 
 def modulo_vetor(a: list):
+    'Retorna a norma euclidiana do vetor.'
     # Foi utilizado norma euclidiana
     soma = 0
     for i in range(len(a)):
@@ -19,7 +22,7 @@ def modulo_vetor(a: list):
     return mod
 
 def prod_vetor_escalar(a: list, k):
-    'Retorna o produto entre o vetor a e o escalar k'
+    'Retorna o produto entre o vetor a e o escalar k.'
     res = [0]*len(a)
     for i in range(len(a)):
         res[i] = a[i]*k
@@ -31,7 +34,7 @@ def coluna(A: list[list], j: int):
     return [A[i][j] for i in range(len(A))]
 
 def prod_matriz_vetor(A: list[list], y: list):
-    'Retorna o produto entre A e o vetor y'
+    'Retorna o produto entre A e o vetor y.'
     res = [0]*len(A)
     for i in range(len(y)):
         prod = prod_vetor_escalar(coluna(A, i), y[i])
@@ -47,6 +50,7 @@ def erro_solucao(A: list[list], x: list, b: list):
     return modulo_vetor(erro)
 
 def gera_matriz_diagonal_dominante(A:list[list]):
+    'A é uma matriz quadrada. Altera A e depois a retorna, tornando-a diagonal dominante.'
     for i in range(len(A)):
         soma = 0
         for j in range(len(A[0])):
@@ -56,6 +60,7 @@ def gera_matriz_diagonal_dominante(A:list[list]):
     return A
 
 def check_matriz_diagonal_dominante(A:list[list]):
+    'A é uma matriz quadrada. Retorna uma string indicando se A é diagonal dominante.'
     for i in range(len(A)):
         soma = 0
         for j in range(len(A[0])):
